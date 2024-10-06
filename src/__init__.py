@@ -9,6 +9,8 @@ from flask_login import LoginManager
 
 import src.db as database
 
+from src.main import main_bp
+
 scriptdir = os.path.dirname(os.path.abspath(__file__))
 dbfile = os.path.join(scriptdir, "db.sqlite3")
 
@@ -32,6 +34,8 @@ def create_app():
     app.config['SECRET_KEY'] = 'NotDefault'
     app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{dbfile}"
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+    app.register_blueprint(main_bp)
 
     _setup_db(app)
 
