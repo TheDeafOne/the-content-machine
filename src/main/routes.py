@@ -5,5 +5,4 @@ from . import main_bp
 
 @main_bp.route('/')
 def index():
-    print('what')
     return render_template('index.html')
