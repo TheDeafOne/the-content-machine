@@ -1,4 +1,4 @@
-from src.logic.llm import LLM 
+from src.logic.creators import LLM, ImageGenerator
 
 CONTENT_THEMES = {
     "Storytelling": "Share a quick personal story, anecdote, or a fictional micro-narrative.",
@@ -19,10 +19,13 @@ CONTENT_THEMES = {
 }
 
 llm = LLM()
+img_gen = ImageGenerator()
+
 
 def generate_content():
     content_text = generate_text("scary story", "middle schoolers")
-    return content_text
+    content_photo = generate_photo(content_text)
+    return content_photo
 
 
 def generate_text(story_type: str, audience: str):

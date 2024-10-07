@@ -5,28 +5,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Index</title>
-    <script>
-        // JavaScript function to send a request to the Flask backend
-        function getData() {
-            // Fetch API to make a GET request to the backend
-            fetch('/generate_text')
-                .then(response => response.json()) // Convert the response to JSON
-                .then(data => {
-                    // Display the response in the 'result' div
-                    document.getElementById('result').textContent = data.message;
-                })
-                .catch(error => console.error('Error:', error)); // Log any errors
-        }
-    </script>
+    <script src="static/scripts/pipeline-manager.js"></script>
 </head>
 
 <body>
-    <h1>Get Info Test</h1>
     <!-- Button to trigger the backend call -->
-    <button onclick="getData()">Test</button>
+    <button onclick="generateStory()">Generate Story</button>
 
     <!-- Div to display the result from the backend -->
-    <div id="result"></div>
+    <div id="text-result"></div>
+    <br />
+    <div id="image-prompt-result"></div>
+    <br />
+    <img id="image-result" url="" />
+
 </body>
 
 </html>
