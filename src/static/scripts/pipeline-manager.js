@@ -16,7 +16,7 @@ Only provide the story, do not give any meta-information or context.`
     const storyDiv = document.getElementById('text-result');
     storyDiv.textContent = story;
 
-    generateImageGenerationPrompt();
+    await generateImageGenerationPrompt();
 }
 
 
@@ -37,7 +37,7 @@ async function generateImageGenerationPrompt() {
     const imagePromptDiv = document.getElementById('image-prompt-result');
     imagePromptDiv.textContent = imagePrompt;
 
-    generateImage();
+    await generateImage();
 }
 
 async function generateImage() {
@@ -55,4 +55,29 @@ async function generateImage() {
     const imageUrl = data.url;
     const imageDiv = document.getElementById('image-result');
     imageDiv.src = imageUrl;
+}
+
+async function generateVoiceOver() {
+    const story = document.getElementById('text-result').textContent;
+
+    const response = await fetch('generate-voice-over', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            text: story
+        })
+    });
+
+    if (response.status !== 200) {
+        console.log("Error generating voice over");
+        return;
+    }
+    const data = await response.blob();
+    const url = URL.createObjectURL(data);
+    const playButton = document.getElementById('narration-play-button');
+    playButton.disabled = false;
+    playButton.onclick = () => {
+        const audio = new Audio(url);
+        audio.play();
+    };
 }

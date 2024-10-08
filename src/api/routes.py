@@ -1,11 +1,12 @@
-from flask import jsonify, request
+from flask import jsonify, request, send_file
 
-from src.logic.creators import LLM, ImageGenerator
+from src.logic.creators import LLM, ImageGenerator, Narrator
 
 from . import api_bp
 
 llm = LLM()
 img_gen = ImageGenerator()
+narrator = Narrator()
 
 @api_bp.post('/generate-text/')
 def generate_text():
@@ -34,5 +35,13 @@ def generate_image():
         
     return jsonify(img_gen.generate_image(prompt)), 200
 
-
-
+@api_bp.post('/generate-voice-over/')
+def generate_voice_over():
+    data = request.get_json()
+    text = data.get('text')
+    if not text:
+        return jsonify({"error": "text is required."}), 400
+    
+    narrator.generate_voice_over(text)
+    
+    return send_file(narrator.narration_mp3_path), 200

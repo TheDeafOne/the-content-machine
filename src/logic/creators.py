@@ -1,11 +1,15 @@
 import os
+import os.path as path
+import sys
 
 import pollinations as ai
-from flask import jsonify
+from elevenlabs import save
+from elevenlabs.client import ElevenLabs
 from groq import Groq
 
-from config import LLM_API_KEY
+from config import LLM_API_KEY, NARRATION_API_KEY
 
+TMP_DIRECTORY = path.join(path.split(path.abspath(__file__))[0], 'tmp')
 
 class LLM:
     def __init__(self):
@@ -54,10 +58,28 @@ class ImageGenerator:
             "prompt": text,
             "url": response.url,
         }
+    
+class Narrator:
+    def __init__(self):
+        self.narrator = ElevenLabs(api_key=NARRATION_API_KEY, timeout=None)
+        self.narration_mp3_path = path.join(TMP_DIRECTORY, 'tmp.mp3')
+    
+    def generate_voice_over(self, text):
+        print('generating narration..')
+        response = self.narrator.generate(
+            text=text,
+            voice="John Doe - Intimate",
+        )
+        save(response, self.narration_mp3_path)
+   
+    def delete_voice_over(self):
+        os.remove(self.narration_mp3_path)
 
 if __name__ == "__main__":
-    ig = ImageGenerator()
-    response = ig.generate_image("A beautiful sunset over the mountains")
-    print(response)
+    # ig = ImageGenerator()
+    # response = ig.generate_image("A beautiful sunset over the mountains")
+    n = Narrator()
+    response = n.generate_voice_over("A beautiful sunset over the mountains")
+    # save(response, 'test.mp3')
 
     
