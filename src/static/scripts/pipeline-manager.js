@@ -38,6 +38,7 @@ async function generateImageGenerationPrompt() {
     imagePromptDiv.textContent = imagePrompt;
 
     await generateImage();
+    await generateVoiceOver();
 }
 
 async function generateImage() {
