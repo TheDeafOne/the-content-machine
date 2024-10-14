@@ -1,5 +1,6 @@
 # project files/directories
 *.mp3
+*.srt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -8,6 +9,9 @@ __pycache__/
 
 # C extensions
 *.so
+
+# VSCode
+.vscode/
 
 # Distribution / packaging
 .Python
