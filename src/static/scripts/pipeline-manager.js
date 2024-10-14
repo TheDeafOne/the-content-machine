@@ -1,3 +1,23 @@
+
+// const CONTENT_THEMES = {
+//     "Storytelling": "Share a quick personal story, anecdote, or a fictional micro-narrative.",
+//     "Education": "Break down complex topics into bite-sized, easy-to-understand lessons.",
+//     "News": "Provide brief updates on current events or trending topics.",
+//     "Tutorials": "Show a quick 'how-to' guide on a specific skill or task.",
+//     "Motivation/Inspirational": "Share a motivational quote, story, or daily affirmation.",
+//     "Product Reviews": "Give a fast and concise review of a product or gadget.",
+//     "Life Hacks": "Showcase quick, clever tips to make everyday tasks easier.",
+//     "Behind-the-Scenes": "Offer a sneak peek into your work, process, or environment.",
+//     "Fitness": "Share a one-minute workout or health tip.",
+//     "Cooking": "Show a fast recipe or cooking tip in action.",
+//     "Challenges": "Participate in or create a viral challenge.",
+//     "Q&A": "Answer commonly asked questions in a rapid-fire format.",
+//     "Quotes/Facts": "Share an interesting fact, quote, or statistic.",
+//     "Humor/Comedy Skits": "Short comedic sketches or jokes.",
+//     "Time-lapse": "Condense a longer process into a one-minute time-lapse video."
+// }
+
+
 async function generateStory() {
     const prompt = `Generate a scary story that takes one minute to read. It should have a beginning, middle, and end. 
 It should be oriented towards children and should be engaging and easy to understand. 
