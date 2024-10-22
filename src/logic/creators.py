@@ -1,8 +1,7 @@
+import datetime
 import os
 import os.path as path
 import sys
-import datetime
-
 
 import pollinations as ai
 from elevenlabs import save
@@ -56,6 +55,9 @@ class ImageGenerator:
             seed=42,
             nologo=True
         )
+        # save img
+        with open(path.join(TMP_DIRECTORY, 'tmp_image.png'), 'wb') as handler:
+            handler.write(response.content)
         return {
             "prompt": text,
             "url": response.url,
@@ -131,11 +133,13 @@ class Narrator:
             f.write(srt_content)
 
 
+
+
 if __name__ == "__main__":
-    # ig = ImageGenerator()
-    # response = ig.generate_image("A beautiful sunset over the mountains")
-    n = Narrator()
-    response = n.generate_voice_over("""A beautiful sunset over the sea""")
+    ig = ImageGenerator()
+    response = ig.generate_image("A beautiful sunset over the mountains")
+    # n = Narrator()
+    # response = n.generate_voice_over("""A beautiful sunset over the sea""")
     # save(response, 'test.mp3')
 
     

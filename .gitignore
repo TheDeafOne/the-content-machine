@@ -1,6 +1,7 @@
 # project files/directories
 *.mp3
 *.srt
+*.png
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
