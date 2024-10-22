@@ -7,10 +7,16 @@ import pollinations as ai
 from elevenlabs import save
 from elevenlabs.client import ElevenLabs
 from groq import Groq
+from moviepy.editor import CompositeVideoClip, ImageClip, TextClip
 
 from config import LLM_API_KEY, NARRATION_API_KEY
 
 TMP_DIRECTORY = path.join(path.split(path.abspath(__file__))[0], 'tmp')
+
+MP3_PATH = path.join(TMP_DIRECTORY, 'tmp.mp3')
+SRT_PATH = path.join(TMP_DIRECTORY, 'tmp_subs.srt')
+IMG_PATH = path.join(TMP_DIRECTORY, 'tmp_img.png')
+VIDEO_PATH = path.join(TMP_DIRECTORY, 'tmp_video.mp4')
 
 class LLM:
     def __init__(self):
@@ -56,7 +62,7 @@ class ImageGenerator:
             nologo=True
         )
         # save img
-        with open(path.join(TMP_DIRECTORY, 'tmp_image.png'), 'wb') as handler:
+        with open(IMG_PATH, 'wb') as handler:
             handler.write(response.content)
         return {
             "prompt": text,
@@ -66,8 +72,7 @@ class ImageGenerator:
 class Narrator:
     def __init__(self):
         self.narrator = ElevenLabs(api_key=NARRATION_API_KEY, timeout=None)
-        self.narration_mp3_path = path.join(TMP_DIRECTORY, 'tmp.mp3')
-        self.narration_srt_path = path.join(TMP_DIRECTORY, 'tmp_subs.srt')
+        
     
     def generate_voice_over(self, text):
         print('generating narration...')
@@ -77,10 +82,10 @@ class Narrator:
         )
         audio = str.encode(response['audio_base64'])
         self._create_subs_srt(response["alignment"])
-        save(audio, self.narration_mp3_path)
+        save(audio, MP3_PATH)
    
     def delete_voice_over(self):
-        os.remove(self.narration_mp3_path)
+        os.remove(MP3_PATH)
 
     
     def _format_time(self, seconds):
@@ -129,17 +134,31 @@ class Narrator:
                 word = ""
 
         # Write SRT content to file
-        with open(self.narration_srt_path, "w") as f:
+        with open(SRT_PATH, "w") as f:
             f.write(srt_content)
 
+class VideoEditor:
+    def edit(self):
+        # Load the image file and create a video from it (set the duration for how long the still image will be shown)
+        image = ImageClip(IMG_PATH, duration=10)  # 10-second video
 
+        # Create a text clip (caption)
+        caption = TextClip("Your Caption Here", fontsize=40, color='white')
+        caption = caption.set_position(("center", "bottom")).set_duration(10)  # Match duration to the image video
 
+        # Combine the image and the caption
+        video_with_caption = CompositeVideoClip([image, caption])
+
+        # Write the output video file
+        video_with_caption.write_videofile(VIDEO_PATH, fps=24, codec="libx264")
 
 if __name__ == "__main__":
-    ig = ImageGenerator()
-    response = ig.generate_image("A beautiful sunset over the mountains")
+    # ig = ImageGenerator()
+    # response = ig.generate_image("A beautiful sunset over the mountains")
     # n = Narrator()
     # response = n.generate_voice_over("""A beautiful sunset over the sea""")
     # save(response, 'test.mp3')
+    ve = VideoEditor()
+    ve.edit()
 
     
