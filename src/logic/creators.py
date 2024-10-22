@@ -7,9 +7,13 @@ import pollinations as ai
 from elevenlabs import save
 from elevenlabs.client import ElevenLabs
 from groq import Groq
+from moviepy.config import change_settings
 from moviepy.editor import CompositeVideoClip, ImageClip, TextClip
 
-from config import LLM_API_KEY, NARRATION_API_KEY
+from config import (FFMPEG_LOCATION, IMAGE_MAGICK_LOCATION, LLM_API_KEY,
+                    NARRATION_API_KEY)
+
+change_settings({"FFMPEG_BINARY": FFMPEG_LOCATION, "IMAGEMAGICK_BINARY": IMAGE_MAGICK_LOCATION})
 
 TMP_DIRECTORY = path.join(path.split(path.abspath(__file__))[0], 'tmp')
 
