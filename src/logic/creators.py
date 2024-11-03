@@ -4,6 +4,7 @@ import os.path as path
 import sys
 
 import pollinations as ai
+import pysrt
 from elevenlabs import save
 from elevenlabs.client import ElevenLabs
 from groq import Groq
@@ -100,69 +101,118 @@ class Narrator:
         milliseconds = (seconds % 1) * 1000
         return f"{int(hours):02}:{int(minutes):02}:{int(seconds):02},{int(milliseconds):03}"
     
-    def _create_subs_srt(self, subtitles):
+    def _parse_response_subtitles(self, subtitles):
         characters = subtitles['characters']
         start_times = subtitles['character_start_times_seconds']
         end_times = subtitles['character_end_times_seconds']
 
-        # Initialize variables
-        srt_content = ""
+        words = []
+        word_start_times = []
+        word_end_times = []
+
         word = ""
         word_start_time = None
         word_end_time = None
-        subtitle_count = 1
 
         for i in range(len(characters)):
             char = characters[i]
-            
-            # Start of a new word
+
+            # Start a new word if necessary
             if word == "":
                 word_start_time = start_times[i]
 
             word += char
-            
-            # End of the word when a space is encountered or end of character list
+
+            # End of a word when a space is encountered or at the end of the list
             if char == " " or i == len(characters) - 1:
-                if word.strip():  # Only create subtitles for non-empty words
+                if word.strip():  # Only add non-empty words
                     word_end_time = end_times[i]
 
-                    # Format SRT entry
-                    srt_content += f"{subtitle_count}\n"
-                    srt_content += f"{self._format_time(word_start_time)} --> {self._format_time(word_end_time)}\n"
-                    srt_content += word.strip() + "\n\n"
+                    # Append word and its timing
+                    words.append(word.strip())
+                    word_start_times.append(word_start_time)
+                    word_end_times.append(word_end_time)
 
-                    # Increment subtitle counter and reset the word
-                    subtitle_count += 1
-
-                # Reset word
+                # Reset the word
                 word = ""
 
-        # Write SRT content to file
-        with open(SRT_PATH, "w") as f:
-            f.write(srt_content)
+        return {
+            'words': words,
+            'word_start_times': word_start_times,
+            'word_end_times': word_end_times
+        }
+    
+    def _create_subs_srt(self, subtitles):
+        parsed_subtitles = self._parse_response_subtitles(subtitles)
+        srt_content = []
+        subtitle_count = 1
+        group = ""
+        group_start_time = None
+        group_end_time = None
+        accumulated_duration = 0.0
+        threshold = 1.0  # Minimum duration of 1 second
+
+        for i, (word, start_time, end_time) in enumerate(parsed_subtitles.values()):
+            # Start a new group if necessary
+            if group == "":
+                group_start_time = start_time
+
+            # Add the word to the group
+            group += word + " "
+
+            # Accumulate the duration of this group
+            accumulated_duration = end_time - group_start_time
+
+            # If the duration exceeds the threshold, or it's the last word
+            if accumulated_duration < threshold and i != len(parsed_subtitles):
+                continue
+            
+            group_end_time = end_time
+
+            srt_content.append(f'{subtitle_count}\n')
+            srt_content.append(f'{self._format_time(group_start_time)} --> {self._format_time(group_end_time)}\n')
+            srt_content.append(f'{group}\n\n')
+
+            # Reset the group and duration for the next combination
+            group = ""
+            accumulated_duration = 0.0
+
+        with open(SRT_PATH, 'w') as f:
+            f.write(''.join(srt_content))
+        
 
 class VideoEditor:
     def edit(self):
+        subtitles = pysrt.open(SRT_PATH)
+
+        duration = subtitles[-1].end.seconds
+
         # Load the image file and create a video from it (set the duration for how long the still image will be shown)
-        image = ImageClip(IMG_PATH, duration=10)  # 10-second video
+        image = ImageClip(IMG_PATH, duration=duration)  # 10-second video
 
-        # Create a text clip (caption)
-        caption = TextClip("Your Caption Here", fontsize=40, color='white')
-        caption = caption.set_position(("center", "bottom")).set_duration(10)  # Match duration to the image video
+        caption_clips = []
+        # Iterate through the subtitles and create text clips for each
+        for subtitle in subtitles:
+            # Create a TextClip for each subtitle (caption)
+            caption = TextClip(subtitle.text, fontsize=40, color='white')
+            caption = caption.set_position(("center", "center")).set_start(subtitle.start.milliseconds).set_duration(subtitle.duration.milliseconds)
 
-        # Combine the image and the caption
-        video_with_caption = CompositeVideoClip([image, caption])
+            # Append the caption clip to the list
+            caption_clips.append(caption)
 
-        # Write the output video file
-        video_with_caption.write_videofile(VIDEO_PATH, fps=24, codec="libx264")
+        # Combine the image with the captions (overlay all caption clips on the image)
+        video_with_captions = CompositeVideoClip([image] + caption_clips)
+
+        # Write the final video to a file
+        video_with_captions.write_videofile(VIDEO_PATH, fps=24, codec="libx264")
 
 if __name__ == "__main__":
     # ig = ImageGenerator()
     # response = ig.generate_image("A beautiful sunset over the mountains")
-    # n = Narrator()
-    # response = n.generate_voice_over("""A beautiful sunset over the sea""")
+    n = Narrator()
+    response = n.generate_voice_over("""A beautiful sunset over the sea""")
     # save(response, 'test.mp3')
-    ve = VideoEditor()
-    ve.edit()
+    # ve = VideoEditor()
+    # ve.edit()
 
     
