@@ -170,12 +170,14 @@ class VideoEditor:
         audio_clip = AudioFileClip(MP3_PATH)
         image = ImageClip(IMG_PATH, duration=audio_clip.duration)  # 10-second video
         generator = lambda txt: TextClip(
-            txt, 
+            txt, # TODO: make all this font shit customizable via the ui
             font="arial", 
-            fontsize=50, 
+            fontsize=80, 
             color="white", 
-            method='caption', 
-            size=image.size
+            # method='caption', 
+            size=image.size,
+            # stroke_width=10,
+            # method='label'
         )
         sub_clip = SubtitlesClip(SRT_PATH, generator)
         # Combine the image with the captions (overlay all caption clips on the image)
