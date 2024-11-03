@@ -4,7 +4,6 @@ import os.path as path
 import sys
 
 import pollinations as ai
-import pysrt
 from elevenlabs import save
 from elevenlabs.client import ElevenLabs
 from groq import Groq
@@ -183,28 +182,29 @@ class Narrator:
 
 class VideoEditor:
     def edit(self):
-        subtitles = pysrt.open(SRT_PATH)
+        pass
+        # subtitles = pysrt.open(SRT_PATH)
 
-        duration = subtitles[-1].end.seconds
+        # duration = subtitles[-1].end.seconds
 
-        # Load the image file and create a video from it (set the duration for how long the still image will be shown)
-        image = ImageClip(IMG_PATH, duration=duration)  # 10-second video
+        # # Load the image file and create a video from it (set the duration for how long the still image will be shown)
+        # image = ImageClip(IMG_PATH, duration=duration)  # 10-second video
 
-        caption_clips = []
-        # Iterate through the subtitles and create text clips for each
-        for subtitle in subtitles:
-            # Create a TextClip for each subtitle (caption)
-            caption = TextClip(subtitle.text, fontsize=40, color='white')
-            caption = caption.set_position(("center", "center")).set_start(subtitle.start.milliseconds).set_duration(subtitle.duration.milliseconds)
+        # caption_clips = []
+        # # Iterate through the subtitles and create text clips for each
+        # for subtitle in subtitles:
+        #     # Create a TextClip for each subtitle (caption)
+        #     caption = TextClip(subtitle.text, fontsize=40, color='white')
+        #     caption = caption.set_position(("center", "center")).set_start(subtitle.start.milliseconds).set_duration(subtitle.duration.milliseconds)
 
-            # Append the caption clip to the list
-            caption_clips.append(caption)
+        #     # Append the caption clip to the list
+        #     caption_clips.append(caption)
 
-        # Combine the image with the captions (overlay all caption clips on the image)
-        video_with_captions = CompositeVideoClip([image] + caption_clips)
+        # # Combine the image with the captions (overlay all caption clips on the image)
+        # video_with_captions = CompositeVideoClip([image] + caption_clips)
 
-        # Write the final video to a file
-        video_with_captions.write_videofile(VIDEO_PATH, fps=24, codec="libx264")
+        # # Write the final video to a file
+        # video_with_captions.write_videofile(VIDEO_PATH, fps=24, codec="libx264")
 
 if __name__ == "__main__":
     # ig = ImageGenerator()
