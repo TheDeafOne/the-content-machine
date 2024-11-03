@@ -2,13 +2,15 @@ import datetime
 import os
 import os.path as path
 import sys
+import base64
 
 import pollinations as ai
 from elevenlabs import save
 from elevenlabs.client import ElevenLabs
 from groq import Groq
 from moviepy.config import change_settings
-from moviepy.editor import CompositeVideoClip, ImageClip, TextClip
+from moviepy.editor import CompositeVideoClip, ImageClip, TextClip, AudioFileClip
+from moviepy.video.tools.subtitles import SubtitlesClip
 
 from config import (FFMPEG_LOCATION, IMAGE_MAGICK_LOCATION, LLM_API_KEY,
                     NARRATION_API_KEY)
@@ -82,11 +84,15 @@ class Narrator:
         print('generating narration...')
         response = self.narrator.text_to_speech.convert_with_timestamps(
             text=text,
-            voice_id='7fbQ7yJuEo56rYjrYaEh',
+            voice_id='7fbQ7yJuEo56rYjrYaEh', # TODO: make this a ui customizable thing
         )
         audio = str.encode(response['audio_base64'])
+        audio_data = base64.b64decode(audio)
+
         self._create_subs_srt(response["alignment"])
-        save(audio, MP3_PATH)
+        # Save the audio data to a file
+        with open(MP3_PATH, "wb") as f:
+            f.write(audio_data)
    
     def delete_voice_over(self):
         os.remove(MP3_PATH)
@@ -144,37 +150,11 @@ class Narrator:
     def _create_subs_srt(self, subtitles):
         parsed_subtitles = self._parse_response_subtitles(subtitles)
         srt_content = []
-        subtitle_count = 1
-        group = ""
-        group_start_time = None
-        group_end_time = None
-        accumulated_duration = 0.0
-        threshold = 1.0  # Minimum duration of 1 second
-
-        for i, (word, start_time, end_time) in enumerate(parsed_subtitles.values()):
-            # Start a new group if necessary
-            if group == "":
-                group_start_time = start_time
-
-            # Add the word to the group
-            group += word + " "
-
-            # Accumulate the duration of this group
-            accumulated_duration = end_time - group_start_time
-
-            # If the duration exceeds the threshold, or it's the last word
-            if accumulated_duration < threshold and i != len(parsed_subtitles):
-                continue
-            
-            group_end_time = end_time
-
-            srt_content.append(f'{subtitle_count}\n')
-            srt_content.append(f'{self._format_time(group_start_time)} --> {self._format_time(group_end_time)}\n')
-            srt_content.append(f'{group}\n\n')
-
-            # Reset the group and duration for the next combination
-            group = ""
-            accumulated_duration = 0.0
+        for i, (word, start_time, end_time) in enumerate(zip(*parsed_subtitles.values())):
+        
+            srt_content.append(f'{i+1}\n')
+            srt_content.append(f'{self._format_time(start_time)} --> {self._format_time(end_time)}\n')
+            srt_content.append(f'{word}\n\n')
 
         with open(SRT_PATH, 'w') as f:
             f.write(''.join(srt_content))
@@ -182,37 +162,35 @@ class Narrator:
 
 class VideoEditor:
     def edit(self):
-        pass
         # subtitles = pysrt.open(SRT_PATH)
 
         # duration = subtitles[-1].end.seconds
 
-        # # Load the image file and create a video from it (set the duration for how long the still image will be shown)
-        # image = ImageClip(IMG_PATH, duration=duration)  # 10-second video
-
-        # caption_clips = []
-        # # Iterate through the subtitles and create text clips for each
-        # for subtitle in subtitles:
-        #     # Create a TextClip for each subtitle (caption)
-        #     caption = TextClip(subtitle.text, fontsize=40, color='white')
-        #     caption = caption.set_position(("center", "center")).set_start(subtitle.start.milliseconds).set_duration(subtitle.duration.milliseconds)
-
-        #     # Append the caption clip to the list
-        #     caption_clips.append(caption)
-
-        # # Combine the image with the captions (overlay all caption clips on the image)
-        # video_with_captions = CompositeVideoClip([image] + caption_clips)
-
-        # # Write the final video to a file
-        # video_with_captions.write_videofile(VIDEO_PATH, fps=24, codec="libx264")
+        # Load the image file and create a video from it (set the duration for how long the still image will be shown)
+        audio_clip = AudioFileClip(MP3_PATH)
+        image = ImageClip(IMG_PATH, duration=audio_clip.duration)  # 10-second video
+        generator = lambda txt: TextClip(
+            txt, 
+            font="arial", 
+            fontsize=50, 
+            color="white", 
+            method='caption', 
+            size=image.size
+        )
+        sub_clip = SubtitlesClip(SRT_PATH, generator)
+        # Combine the image with the captions (overlay all caption clips on the image)
+        video_with_captions = CompositeVideoClip([image, sub_clip])
+        video_with_captions: CompositeVideoClip = video_with_captions.set_audio(audio_clip)
+        # Write the final video to a file
+        video_with_captions.write_videofile(VIDEO_PATH, fps=24)
 
 if __name__ == "__main__":
     # ig = ImageGenerator()
     # response = ig.generate_image("A beautiful sunset over the mountains")
-    n = Narrator()
-    response = n.generate_voice_over("""A beautiful sunset over the sea""")
+    # n = Narrator()
+    # response = n.generate_voice_over("""A beautiful sunset over the sea""")
     # save(response, 'test.mp3')
-    # ve = VideoEditor()
-    # ve.edit()
+    ve = VideoEditor()
+    ve.edit()
 
     
