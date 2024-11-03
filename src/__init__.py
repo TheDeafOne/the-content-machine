@@ -1,11 +1,5 @@
 import os
-import random
-import string
-import urllib.request
-
-import requests
 from flask import Flask
-from flask_login import LoginManager
 
 import src.db as database
 
