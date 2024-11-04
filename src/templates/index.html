@@ -1,14 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Index</title>
     <script src="static/scripts/pipeline-manager.js"></script>
-</head>
+  </head>
 
-<body>
+  <body>
     <!-- Button to trigger the backend call -->
     <button onclick="generateStory()">Generate Story</button>
 
@@ -19,8 +18,10 @@
     <br />
     <img id="image-result" url="" />
     <br />
-    <button id="narration-play-button" disabled>Play</button>
-
-</body>
-
+    <audio id="narration-audio" controls>
+    </audio>
+    <br />
+    <video id="edited-video" controls>
+    </video>
+  </body>
 </html>

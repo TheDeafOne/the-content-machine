@@ -1,23 +1,3 @@
-
-// const CONTENT_THEMES = {
-//     "Storytelling": "Share a quick personal story, anecdote, or a fictional micro-narrative.",
-//     "Education": "Break down complex topics into bite-sized, easy-to-understand lessons.",
-//     "News": "Provide brief updates on current events or trending topics.",
-//     "Tutorials": "Show a quick 'how-to' guide on a specific skill or task.",
-//     "Motivation/Inspirational": "Share a motivational quote, story, or daily affirmation.",
-//     "Product Reviews": "Give a fast and concise review of a product or gadget.",
-//     "Life Hacks": "Showcase quick, clever tips to make everyday tasks easier.",
-//     "Behind-the-Scenes": "Offer a sneak peek into your work, process, or environment.",
-//     "Fitness": "Share a one-minute workout or health tip.",
-//     "Cooking": "Show a fast recipe or cooking tip in action.",
-//     "Challenges": "Participate in or create a viral challenge.",
-//     "Q&A": "Answer commonly asked questions in a rapid-fire format.",
-//     "Quotes/Facts": "Share an interesting fact, quote, or statistic.",
-//     "Humor/Comedy Skits": "Short comedic sketches or jokes.",
-//     "Time-lapse": "Condense a longer process into a one-minute time-lapse video."
-// }
-
-
 async function generateStory() {
     const prompt = `Generate a scary story that takes one minute to read. It should have a beginning, middle, and end. 
 It should be oriented towards children and should be engaging and easy to understand. 
@@ -93,12 +73,30 @@ async function generateVoiceOver() {
         console.log("Error generating voice over");
         return;
     }
+    const audio_component = document.getElementById('narration-audio');
+    const audio_source = document.createElement('source');
     const data = await response.blob();
-    const url = URL.createObjectURL(data);
-    const playButton = document.getElementById('narration-play-button');
-    playButton.disabled = false;
-    playButton.onclick = () => {
-        const audio = new Audio(url);
-        audio.play();
-    };
+    const audio_url = URL.createObjectURL(data);
+    audio_source.src = audio_url;
+    audio_component.appendChild(audio_source);
+
+    editVideo()
+}
+
+async function editVideo() {
+    const response = await fetch('edit-video', {
+        method: 'POST'
+    });
+
+    if (response.status !== 200) {
+        console.log("Error generating voice over");
+        return;
+    }
+    const audio_component = document.getElementById('edited-video');
+    const audio_source = document.createElement('source');
+    const data = await response.blob();
+    const videoUrl = URL.createObjectURL(data);
+
+    audio_source.src = videoUrl;
+    audio_component.appendChild(audio_source);
 }

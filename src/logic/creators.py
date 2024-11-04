@@ -154,7 +154,7 @@ class Narrator:
         
             srt_content.append(f'{i+1}\n')
             srt_content.append(f'{self._format_time(start_time)} --> {self._format_time(end_time)}\n')
-            srt_content.append(f'{word}\n\n')
+            srt_content.append(f'{word.strip().replace('.','')}\n\n')
 
         with open(SRT_PATH, 'w') as f:
             f.write(''.join(srt_content))
@@ -174,7 +174,7 @@ class VideoEditor:
             font="arial", 
             fontsize=80, 
             color="white", 
-            # method='caption', 
+            method='caption', 
             size=image.size,
             # stroke_width=10,
             # method='label'

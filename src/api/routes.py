@@ -1,12 +1,14 @@
 from flask import jsonify, request, send_file
 
-from src.logic.creators import LLM, ImageGenerator, Narrator
+from src.logic.creators import LLM, ImageGenerator, Narrator, VideoEditor
+import src.logic.creators as creators
 
 from . import api_bp
 
 llm = LLM()
 img_gen = ImageGenerator()
 narrator = Narrator()
+editor = VideoEditor()
 
 @api_bp.post('/generate-text/')
 def generate_text():
@@ -44,4 +46,9 @@ def generate_voice_over():
     
     narrator.generate_voice_over(text)
     
-    return send_file(narrator.narration_mp3_path), 200
+    return send_file(creators.MP3_PATH), 200
+
+@api_bp.post('/edit-video/')
+def edit_video():
+    editor.edit()
+    return send_file(creators.VIDEO_PATH, 200)
